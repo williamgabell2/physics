@@ -1,0 +1,1375 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Physics Lab</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111216;
+      --surface: #181a20;
+      --surface-2: #20232b;
+      --surface-3: #262a33;
+      --text: #f4f1e8;
+      --muted: #aaa69b;
+      --border: #343844;
+      --cyan: #73d8c9;
+      --amber: #f2b45f;
+      --rose: #ec6a86;
+      --blue: #7cabff;
+      --green: #98d46b;
+      --shadow: rgba(0, 0, 0, 0.35);
+      --danger: #ff7f65;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(115, 216, 201, 0.08), transparent 28rem),
+        radial-gradient(circle at 80% 0%, rgba(242, 180, 95, 0.08), transparent 28rem),
+        var(--bg);
+      color: var(--text);
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(18rem, 23rem) minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+      border-right: 1px solid var(--border);
+      background: rgba(24, 26, 32, 0.92);
+      box-shadow: 0.5rem 0 2rem var(--shadow);
+      z-index: 2;
+    }
+
+    .brand {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(1.35rem, 1.15rem + 0.75vw, 2rem);
+      line-height: 1.05;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.35;
+    }
+
+    .status-light {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 0.58rem;
+      height: 0.58rem;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 1rem rgba(152, 212, 107, 0.8);
+    }
+
+    .toolbar,
+    .mode-grid,
+    .preset-grid,
+    .readouts,
+    .control-group,
+    .mini-actions {
+      display: grid;
+      gap: 0.62rem;
+    }
+
+    .toolbar {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .mode-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .preset-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mini-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .btn,
+    .mode-button,
+    .preset-button {
+      min-height: 2.6rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      background: var(--surface-2);
+      transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+    }
+
+    .btn:hover,
+    .mode-button:hover,
+    .preset-button:hover {
+      border-color: color-mix(in srgb, var(--cyan), var(--border) 45%);
+      background: var(--surface-3);
+    }
+
+    .btn:active,
+    .mode-button:active,
+    .preset-button:active {
+      transform: translateY(1px);
+    }
+
+    .btn.primary {
+      border-color: color-mix(in srgb, var(--cyan), var(--border) 25%);
+      background: color-mix(in srgb, var(--cyan), var(--surface-2) 72%);
+      color: #061513;
+      font-weight: 500;
+    }
+
+    .btn.danger {
+      border-color: color-mix(in srgb, var(--danger), var(--border) 30%);
+      color: var(--danger);
+    }
+
+    .mode-button[aria-pressed="true"] {
+      color: #061513;
+      background: var(--cyan);
+      border-color: var(--cyan);
+      font-weight: 500;
+    }
+
+    .control-group {
+      padding-top: 0.15rem;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .value {
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--cyan);
+    }
+
+    .switch-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 0.75rem;
+      min-height: 2rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .switch-row input {
+      width: 1.2rem;
+      height: 1.2rem;
+      accent-color: var(--cyan);
+    }
+
+    .readouts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .readout {
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.72rem;
+      background: color-mix(in srgb, var(--surface), transparent 8%);
+    }
+
+    .readout-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.76rem;
+      margin-bottom: 0.28rem;
+    }
+
+    .readout-value {
+      display: block;
+      color: var(--text);
+      font-size: 1.08rem;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+
+    .stage {
+      position: relative;
+      min-width: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background: #0f1014;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100vh;
+      min-height: 100vh;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .hud {
+      position: absolute;
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 1rem;
+      pointer-events: none;
+    }
+
+    .hint,
+    .selected {
+      max-width: min(30rem, 100%);
+      padding: 0.78rem 0.9rem;
+      border: 1px solid rgba(244, 241, 232, 0.14);
+      border-radius: 8px;
+      background: rgba(17, 18, 22, 0.72);
+      box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(10px);
+      color: var(--text);
+      font-size: 0.88rem;
+      line-height: 1.35;
+    }
+
+    .selected {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    kbd {
+      display: inline-block;
+      min-width: 1.45rem;
+      padding: 0.08rem 0.34rem;
+      border: 1px solid rgba(244, 241, 232, 0.18);
+      border-radius: 5px;
+      background: rgba(244, 241, 232, 0.08);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-family: inherit;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .stage {
+        order: -1;
+        min-height: 0;
+      }
+
+      .panel {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 0.5rem 1.5rem var(--shadow);
+      }
+
+      .controls-wrap {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      canvas {
+        height: 62vh;
+        min-height: 30rem;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .panel {
+        padding: 0.8rem;
+      }
+
+      .controls-wrap,
+      .toolbar,
+      .mode-grid,
+      .preset-grid,
+      .readouts,
+      .mini-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .brand {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .status-light {
+        white-space: normal;
+      }
+
+      .hud {
+        position: static;
+        padding: 0.8rem;
+        flex-direction: column;
+        align-items: stretch;
+        background: #0f1014;
+      }
+
+      .selected {
+        text-align: left;
+      }
+
+      canvas {
+        height: 56vh;
+        min-height: 22rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside class="panel" aria-label="Physics controls">
+      <div class="brand">
+        <div>
+          <h1>Physics Lab</h1>
+          <p class="subtle">Launch particles through gravity wells and tune the forces in real time.</p>
+        </div>
+        <span class="status-light"><span class="status-dot" aria-hidden="true"></span><span id="runStatus">Running</span></span>
+      </div>
+
+      <div class="toolbar" aria-label="Simulation actions">
+        <button class="btn primary" id="toggleRun" type="button">Pause</button>
+        <button class="btn" id="resetScene" type="button">Reset</button>
+        <button class="btn danger" id="clearBodies" type="button">Clear</button>
+      </div>
+
+      <section class="control-group" aria-label="Pointer mode">
+        <h2>Mode</h2>
+        <div class="mode-grid">
+          <button class="mode-button" id="modeLaunch" type="button" aria-pressed="true" data-mode="launch">Launch</button>
+          <button class="mode-button" id="modeWells" type="button" aria-pressed="false" data-mode="well">Wells</button>
+          <button class="mode-button" id="modeGrab" type="button" aria-pressed="false" data-mode="grab">Grab</button>
+        </div>
+      </section>
+
+      <section class="control-group" aria-label="Presets">
+        <h2>Presets</h2>
+        <div class="preset-grid">
+          <button class="preset-button" type="button" data-preset="orbit">Orbit lab</button>
+          <button class="preset-button" type="button" data-preset="rain">Rain cannon</button>
+          <button class="preset-button" type="button" data-preset="slingshot">Slingshot</button>
+          <button class="preset-button" type="button" data-preset="maze">Well maze</button>
+        </div>
+      </section>
+
+      <div class="controls-wrap">
+        <section class="control-group" aria-label="World forces">
+          <div class="control-header">
+            <label for="gravity">Gravity</label>
+            <span class="value" id="gravityValue">360 px/s^2</span>
+          </div>
+          <input id="gravity" type="range" min="-600" max="1000" value="360" step="10">
+        </section>
+
+        <section class="control-group" aria-label="Air friction">
+          <div class="control-header">
+            <label for="friction">Friction</label>
+            <span class="value" id="frictionValue">0.10%</span>
+          </div>
+          <input id="friction" type="range" min="0" max="2" value="0.1" step="0.02">
+        </section>
+
+        <section class="control-group" aria-label="Object mass">
+          <div class="control-header">
+            <label for="mass">Mass</label>
+            <span class="value" id="massValue">8 kg</span>
+          </div>
+          <input id="mass" type="range" min="1" max="40" value="8" step="1">
+        </section>
+
+        <section class="control-group" aria-label="Launch power">
+          <div class="control-header">
+            <label for="launchPower">Launch power</label>
+            <span class="value" id="launchPowerValue">1.00x</span>
+          </div>
+          <input id="launchPower" type="range" min="0.25" max="2.5" value="1" step="0.05">
+        </section>
+
+        <section class="control-group" aria-label="Bounce">
+          <div class="control-header">
+            <label for="bounce">Bounce</label>
+            <span class="value" id="bounceValue">76%</span>
+          </div>
+          <input id="bounce" type="range" min="0" max="1" value="0.76" step="0.01">
+        </section>
+
+        <section class="control-group" aria-label="Well strength">
+          <div class="control-header">
+            <label for="wellStrength">Well strength</label>
+            <span class="value" id="wellStrengthValue">650 / 1000</span>
+          </div>
+          <input id="wellStrength" type="range" min="0" max="1000" value="650" step="10">
+        </section>
+      </div>
+
+      <section class="control-group" aria-label="Display options">
+        <h2>View</h2>
+        <label class="switch-row">
+          <span>Velocity vectors</span>
+          <input id="showVectors" type="checkbox" checked>
+        </label>
+        <label class="switch-row">
+          <span>Trails</span>
+          <input id="showTrails" type="checkbox" checked>
+        </label>
+        <label class="switch-row">
+          <span>Particle collisions</span>
+          <input id="collisions" type="checkbox" checked>
+        </label>
+      </section>
+
+      <section class="readouts" aria-live="polite" aria-label="Live readouts">
+        <div class="readout">
+          <span class="readout-label">Speed</span>
+          <span class="readout-value" id="speedReadout">0 px/s</span>
+        </div>
+        <div class="readout">
+          <span class="readout-label">Particles</span>
+          <span class="readout-value" id="countReadout">0</span>
+        </div>
+        <div class="readout">
+          <span class="readout-label">Wells</span>
+          <span class="readout-value" id="wellReadout">3</span>
+        </div>
+        <div class="readout">
+          <span class="readout-label">Energy</span>
+          <span class="readout-value" id="energyReadout">0</span>
+        </div>
+      </section>
+
+      <section class="mini-actions" aria-label="Gravity well actions">
+        <button class="btn" id="addAtCenter" type="button">Add well</button>
+        <button class="btn" id="maxWells" type="button">Black holes</button>
+      </section>
+    </aside>
+
+    <section class="stage" aria-label="Physics sandbox">
+      <canvas id="world" aria-label="Interactive physics canvas"></canvas>
+      <div class="hud">
+        <div class="hint" id="hint">Drag on the field to launch. Switch to Wells to place and move gravity wells.</div>
+        <div class="selected" id="selectedInfo">No particle selected</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('world');
+    const ctx = canvas.getContext('2d');
+    const elements = {
+      stage: document.querySelector('.stage'),
+      toggleRun: document.getElementById('toggleRun'),
+      resetScene: document.getElementById('resetScene'),
+      clearBodies: document.getElementById('clearBodies'),
+      runStatus: document.getElementById('runStatus'),
+      gravity: document.getElementById('gravity'),
+      friction: document.getElementById('friction'),
+      mass: document.getElementById('mass'),
+      launchPower: document.getElementById('launchPower'),
+      bounce: document.getElementById('bounce'),
+      wellStrength: document.getElementById('wellStrength'),
+      gravityValue: document.getElementById('gravityValue'),
+      frictionValue: document.getElementById('frictionValue'),
+      massValue: document.getElementById('massValue'),
+      launchPowerValue: document.getElementById('launchPowerValue'),
+      bounceValue: document.getElementById('bounceValue'),
+      wellStrengthValue: document.getElementById('wellStrengthValue'),
+      showVectors: document.getElementById('showVectors'),
+      showTrails: document.getElementById('showTrails'),
+      collisions: document.getElementById('collisions'),
+      speedReadout: document.getElementById('speedReadout'),
+      countReadout: document.getElementById('countReadout'),
+      wellReadout: document.getElementById('wellReadout'),
+      energyReadout: document.getElementById('energyReadout'),
+      selectedInfo: document.getElementById('selectedInfo'),
+      hint: document.getElementById('hint'),
+      addAtCenter: document.getElementById('addAtCenter'),
+      maxWells: document.getElementById('maxWells'),
+      modeButtons: Array.from(document.querySelectorAll('.mode-button')),
+      presetButtons: Array.from(document.querySelectorAll('.preset-button'))
+    };
+
+    const state = {
+      running: true,
+      mode: 'launch',
+      bodies: [],
+      wells: [],
+      pointer: null,
+      selectedBody: null,
+      selectedWell: null,
+      camera: { width: 1, height: 1, dpr: 1 },
+      lastTime: performance.now(),
+      spawnIndex: 0,
+      sparkles: []
+    };
+
+    const palette = {
+      body: ['#73d8c9', '#f2b45f', '#ec6a86', '#7cabff', '#98d46b'],
+      line: 'rgba(244, 241, 232, 0.38)',
+      grid: 'rgba(244, 241, 232, 0.07)',
+      gridBold: 'rgba(244, 241, 232, 0.13)',
+      text: '#f4f1e8',
+      muted: '#aaa69b',
+      surface: 'rgba(17, 18, 22, 0.76)'
+    };
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function length(x, y) {
+      return Math.hypot(x, y);
+    }
+
+    function formatInt(value) {
+      return Math.round(value).toLocaleString();
+    }
+
+    function formatStrength(value) {
+      return String(Math.round(normalizedWellStrength(value)));
+    }
+
+    function normalizedWellStrength(value) {
+      return clamp(Number(value) || 0, 0, 1000);
+    }
+
+    function wellPull(strength) {
+      const t = normalizedWellStrength(strength) / 1000;
+      return Math.pow(t, 2.25) * 1100000;
+    }
+
+    function wellRange(strength) {
+      const t = normalizedWellStrength(strength) / 1000;
+      return 24 + t * 78;
+    }
+
+    function settings() {
+      return {
+        gravity: Number(elements.gravity.value),
+        friction: Number(elements.friction.value) / 100,
+        mass: Number(elements.mass.value),
+        launchPower: Number(elements.launchPower.value),
+        bounce: Number(elements.bounce.value),
+        wellStrength: normalizedWellStrength(elements.wellStrength.value),
+        showVectors: elements.showVectors.checked,
+        showTrails: elements.showTrails.checked,
+        collisions: elements.collisions.checked
+      };
+    }
+
+    function updateControlLabels() {
+      const s = settings();
+      elements.gravityValue.textContent = `${formatInt(s.gravity)} px/s^2`;
+      elements.frictionValue.textContent = `${(s.friction * 100).toFixed(2)}%`;
+      elements.massValue.textContent = `${formatInt(s.mass)} kg`;
+      elements.launchPowerValue.textContent = `${s.launchPower.toFixed(2)}x`;
+      elements.bounceValue.textContent = `${formatInt(s.bounce * 100)}%`;
+      elements.wellStrengthValue.textContent = `${formatStrength(s.wellStrength)} / 1000`;
+    }
+
+    function selectBody(body) {
+      state.selectedBody = body;
+      state.selectedWell = null;
+    }
+
+    function selectWell(well) {
+      state.selectedWell = well;
+      state.selectedBody = null;
+      elements.wellStrength.value = String(normalizedWellStrength(well.strength));
+      updateControlLabels();
+    }
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      state.camera.width = rect.width;
+      state.camera.height = rect.height;
+      state.camera.dpr = dpr;
+    }
+
+    let resizeQueued = false;
+    function queueResize() {
+      if (resizeQueued) return;
+      resizeQueued = true;
+      requestAnimationFrame(() => {
+        resizeQueued = false;
+        resize();
+        if (!state.wells.length && !state.bodies.length) resetScene();
+      });
+    }
+
+    function colorFor(index) {
+      return palette.body[index % palette.body.length];
+    }
+
+    function makeBody(x, y, vx, vy, mass = settings().mass) {
+      const radius = clamp(6 + Math.sqrt(mass) * 2.2, 8, 22);
+      const body = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        x,
+        y,
+        vx,
+        vy,
+        ax: 0,
+        ay: 0,
+        mass,
+        radius,
+        color: colorFor(state.spawnIndex++),
+        trail: [],
+        age: 0
+      };
+      state.bodies.push(body);
+      selectBody(body);
+      return body;
+    }
+
+    function makeWell(x, y, strength = settings().wellStrength, radius = 26) {
+      const well = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        x,
+        y,
+        strength: normalizedWellStrength(strength),
+        radius
+      };
+      state.wells.push(well);
+      selectWell(well);
+      return well;
+    }
+
+    function resetScene(preset = 'orbit') {
+      state.bodies = [];
+      state.wells = [];
+      state.sparkles = [];
+      state.selectedBody = null;
+      state.selectedWell = null;
+      const w = state.camera.width || 900;
+      const h = state.camera.height || 700;
+
+      if (preset === 'rain') {
+        makeWell(w * 0.68, h * 0.45, 720, 30);
+        makeWell(w * 0.34, h * 0.62, 430, 28);
+        makeWell(w * 0.78, h * 0.74, 560, 22);
+        for (let i = 0; i < 12; i++) {
+          makeBody(w * 0.12 + i * 12, h * 0.12, 230 + i * 18, -80 + i * 12, 4 + (i % 3) * 5);
+        }
+      } else if (preset === 'slingshot') {
+        makeWell(w * 0.5, h * 0.5, 920, 36);
+        makeWell(w * 0.72, h * 0.35, 640, 28);
+        makeBody(w * 0.2, h * 0.6, 410, -245, 7);
+        makeBody(w * 0.2, h * 0.48, 500, -190, 14);
+      } else if (preset === 'maze') {
+        makeWell(w * 0.28, h * 0.35, 580, 30);
+        makeWell(w * 0.46, h * 0.6, 760, 26);
+        makeWell(w * 0.66, h * 0.32, 680, 30);
+        makeWell(w * 0.78, h * 0.67, 500, 24);
+        makeBody(w * 0.12, h * 0.82, 520, -310, 10);
+      } else {
+        makeWell(w * 0.5, h * 0.5, 780, 36);
+        makeWell(w * 0.28, h * 0.35, 390, 24);
+        makeWell(w * 0.72, h * 0.64, 520, 24);
+        makeBody(w * 0.5, h * 0.23, 360, 0, 7);
+        makeBody(w * 0.72, h * 0.5, 0, 270, 18);
+      }
+      updateReadouts();
+    }
+
+    function pointerPosition(event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      };
+    }
+
+    function nearestWell(point, maxDistance = 42) {
+      let best = null;
+      let bestDistance = maxDistance;
+      for (const well of state.wells) {
+        const d = length(well.x - point.x, well.y - point.y);
+        if (d < bestDistance) {
+          best = well;
+          bestDistance = d;
+        }
+      }
+      return best;
+    }
+
+    function nearestBody(point, maxDistance = 38) {
+      let best = null;
+      let bestDistance = maxDistance;
+      for (let i = state.bodies.length - 1; i >= 0; i--) {
+        const body = state.bodies[i];
+        const d = length(body.x - point.x, body.y - point.y) - body.radius;
+        if (d < bestDistance) {
+          best = body;
+          bestDistance = d;
+        }
+      }
+      return best;
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      for (const button of elements.modeButtons) {
+        button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+      }
+      if (mode === 'launch') {
+        elements.hint.textContent = 'Drag on the field to launch. Longer drag, faster start.';
+      } else if (mode === 'well') {
+        elements.hint.textContent = 'Click open space to add a well. Drag a well to move it.';
+      } else {
+        elements.hint.textContent = 'Drag particles or wells directly. Release to throw selected particles.';
+      }
+    }
+
+    function onPointerDown(event) {
+      canvas.setPointerCapture(event.pointerId);
+      const point = pointerPosition(event);
+      const well = nearestWell(point);
+      const body = nearestBody(point);
+      state.pointer = {
+        id: event.pointerId,
+        startX: point.x,
+        startY: point.y,
+        x: point.x,
+        y: point.y,
+        lastX: point.x,
+        lastY: point.y,
+        lastTime: performance.now(),
+        grabbedWell: null,
+        grabbedBody: null,
+        moved: false
+      };
+
+      if (state.mode === 'well') {
+        if (well) {
+          state.pointer.grabbedWell = well;
+          selectWell(well);
+        } else {
+          const created = makeWell(point.x, point.y);
+          pulse(point.x, point.y, created.strength > 0 ? '#73d8c9' : '#aaa69b');
+        }
+      } else if (state.mode === 'grab') {
+        if (well) {
+          state.pointer.grabbedWell = well;
+          selectWell(well);
+        } else if (body) {
+          state.pointer.grabbedBody = body;
+          selectBody(body);
+          body.vx = 0;
+          body.vy = 0;
+        }
+      } else if (body) {
+        selectBody(body);
+      }
+    }
+
+    function onPointerMove(event) {
+      if (!state.pointer || event.pointerId !== state.pointer.id) return;
+      const point = pointerPosition(event);
+      const now = performance.now();
+      const dt = Math.max(0.001, (now - state.pointer.lastTime) / 1000);
+      const dx = point.x - state.pointer.lastX;
+      const dy = point.y - state.pointer.lastY;
+
+      state.pointer.x = point.x;
+      state.pointer.y = point.y;
+      state.pointer.moved ||= length(point.x - state.pointer.startX, point.y - state.pointer.startY) > 4;
+
+      if (state.pointer.grabbedWell) {
+        state.pointer.grabbedWell.x = point.x;
+        state.pointer.grabbedWell.y = point.y;
+      }
+
+      if (state.pointer.grabbedBody) {
+        const body = state.pointer.grabbedBody;
+        body.x = clamp(point.x, body.radius, state.camera.width - body.radius);
+        body.y = clamp(point.y, body.radius, state.camera.height - body.radius);
+        body.vx = dx / dt;
+        body.vy = dy / dt;
+        body.trail.length = 0;
+      }
+
+      state.pointer.lastX = point.x;
+      state.pointer.lastY = point.y;
+      state.pointer.lastTime = now;
+    }
+
+    function onPointerUp(event) {
+      if (!state.pointer || event.pointerId !== state.pointer.id) return;
+      const point = pointerPosition(event);
+      const p = state.pointer;
+
+      if (state.mode === 'launch' && p.moved && !p.grabbedBody && !p.grabbedWell) {
+        const s = settings();
+        const vx = (p.startX - point.x) * 3.8 * s.launchPower;
+        const vy = (p.startY - point.y) * 3.8 * s.launchPower;
+        makeBody(p.startX, p.startY, vx, vy, s.mass);
+        pulse(p.startX, p.startY, '#f2b45f');
+      }
+
+      if (state.mode === 'grab' && p.grabbedBody) {
+        p.grabbedBody.vx = clamp(p.grabbedBody.vx, -1200, 1200);
+        p.grabbedBody.vy = clamp(p.grabbedBody.vy, -1200, 1200);
+      }
+
+      state.pointer = null;
+    }
+
+    function pulse(x, y, color) {
+      state.sparkles.push({ x, y, color, age: 0, life: 0.42 });
+    }
+
+    function integrate(dt) {
+      const s = settings();
+      const width = state.camera.width;
+      const height = state.camera.height;
+      const maxStep = 1 / 60;
+      const steps = Math.ceil(dt / maxStep);
+      const subDt = dt / steps;
+
+      for (let step = 0; step < steps; step++) {
+        for (const body of state.bodies) {
+          if (state.pointer && state.pointer.grabbedBody === body) continue;
+
+          let ax = 0;
+          let ay = s.gravity;
+          let absorbed = false;
+          for (const well of state.wells) {
+            const dx = well.x - body.x;
+            const dy = well.y - body.y;
+            const distSq = Math.max(dx * dx + dy * dy, 1300);
+            const dist = Math.sqrt(distSq);
+            if (well.strength >= 950 && dist < Math.max(18, well.radius * 0.95)) {
+              absorbed = true;
+              pulse(well.x, well.y, '#f2b45f');
+              break;
+            }
+            const pull = wellPull(well.strength);
+            if (pull <= 0) continue;
+            const force = pull / distSq;
+            ax += (dx / dist) * force * 130;
+            ay += (dy / dist) * force * 130;
+          }
+          if (absorbed) {
+            body.absorbed = true;
+            continue;
+          }
+
+          const drag = Math.max(0, 1 - s.friction * 60 * subDt);
+          body.vx = (body.vx + ax * subDt) * drag;
+          body.vy = (body.vy + ay * subDt) * drag;
+          body.x += body.vx * subDt;
+          body.y += body.vy * subDt;
+          body.ax = ax;
+          body.ay = ay;
+          body.age += subDt;
+
+          if (body.x < body.radius) {
+            body.x = body.radius;
+            body.vx = Math.abs(body.vx) * s.bounce;
+          } else if (body.x > width - body.radius) {
+            body.x = width - body.radius;
+            body.vx = -Math.abs(body.vx) * s.bounce;
+          }
+
+          if (body.y < body.radius) {
+            body.y = body.radius;
+            body.vy = Math.abs(body.vy) * s.bounce;
+          } else if (body.y > height - body.radius) {
+            body.y = height - body.radius;
+            body.vy = -Math.abs(body.vy) * s.bounce;
+          }
+
+          if (s.showTrails) {
+            body.trail.push({ x: body.x, y: body.y });
+            if (body.trail.length > 80) body.trail.shift();
+          } else {
+            body.trail.length = 0;
+          }
+        }
+
+        state.bodies = state.bodies.filter(body => !body.absorbed);
+        if (state.selectedBody && state.selectedBody.absorbed) state.selectedBody = null;
+        if (s.collisions) resolveBodyCollisions(s.bounce);
+      }
+
+      state.sparkles = state.sparkles
+        .map(sparkle => ({ ...sparkle, age: sparkle.age + dt }))
+        .filter(sparkle => sparkle.age < sparkle.life);
+    }
+
+    function resolveBodyCollisions(bounce) {
+      for (let i = 0; i < state.bodies.length; i++) {
+        for (let j = i + 1; j < state.bodies.length; j++) {
+          const a = state.bodies[i];
+          const b = state.bodies[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const distance = Math.max(0.001, length(dx, dy));
+          const minDistance = a.radius + b.radius;
+          if (distance >= minDistance) continue;
+
+          const nx = dx / distance;
+          const ny = dy / distance;
+          const overlap = minDistance - distance;
+          const totalMass = a.mass + b.mass;
+          a.x -= nx * overlap * (b.mass / totalMass);
+          a.y -= ny * overlap * (b.mass / totalMass);
+          b.x += nx * overlap * (a.mass / totalMass);
+          b.y += ny * overlap * (a.mass / totalMass);
+
+          const rvx = b.vx - a.vx;
+          const rvy = b.vy - a.vy;
+          const speed = rvx * nx + rvy * ny;
+          if (speed > 0) continue;
+
+          const impulse = -(1 + bounce) * speed / (1 / a.mass + 1 / b.mass);
+          const ix = impulse * nx;
+          const iy = impulse * ny;
+          a.vx -= ix / a.mass;
+          a.vy -= iy / a.mass;
+          b.vx += ix / b.mass;
+          b.vy += iy / b.mass;
+        }
+      }
+    }
+
+    function drawGrid() {
+      const width = state.camera.width;
+      const height = state.camera.height;
+      ctx.save();
+      ctx.lineWidth = 1;
+      for (let x = 0; x < width; x += 40) {
+        ctx.strokeStyle = x % 160 === 0 ? palette.gridBold : palette.grid;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < height; y += 40) {
+        ctx.strokeStyle = y % 160 === 0 ? palette.gridBold : palette.grid;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawField() {
+      const width = state.camera.width;
+      const height = state.camera.height;
+      if (!state.wells.length) return;
+      ctx.save();
+      ctx.lineWidth = 1;
+      for (let y = 28; y < height; y += 56) {
+        for (let x = 28; x < width; x += 56) {
+          let fx = 0;
+          let fy = 0;
+          for (const well of state.wells) {
+            const dx = well.x - x;
+            const dy = well.y - y;
+            const distSq = Math.max(dx * dx + dy * dy, 1800);
+            const dist = Math.sqrt(distSq);
+            const pull = wellPull(well.strength);
+            if (pull <= 0) continue;
+            const force = pull / distSq;
+            fx += (dx / dist) * force;
+            fy += (dy / dist) * force;
+          }
+          const fieldMagnitude = length(fx, fy);
+          if (fieldMagnitude < 0.001) continue;
+          const mag = clamp(Math.log1p(fieldMagnitude) * 4.5, 3, 22);
+          const angle = Math.atan2(fy, fx);
+          ctx.globalAlpha = 0.23;
+          ctx.strokeStyle = palette.text;
+          ctx.beginPath();
+          ctx.moveTo(x - Math.cos(angle) * mag * 0.5, y - Math.sin(angle) * mag * 0.5);
+          ctx.lineTo(x + Math.cos(angle) * mag * 0.5, y + Math.sin(angle) * mag * 0.5);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(x + Math.cos(angle) * mag * 0.5, y + Math.sin(angle) * mag * 0.5);
+          ctx.lineTo(
+            x + Math.cos(angle) * mag * 0.5 - Math.cos(angle - 0.55) * 5,
+            y + Math.sin(angle) * mag * 0.5 - Math.sin(angle - 0.55) * 5
+          );
+          ctx.lineTo(
+            x + Math.cos(angle) * mag * 0.5 - Math.cos(angle + 0.55) * 5,
+            y + Math.sin(angle) * mag * 0.5 - Math.sin(angle + 0.55) * 5
+          );
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawWells() {
+      for (const well of state.wells) {
+        const power = normalizedWellStrength(well.strength) / 1000;
+        const color = power > 0.9 ? '#f2b45f' : power > 0 ? '#73d8c9' : '#aaa69b';
+        const outer = wellRange(well.strength);
+
+        const gradient = ctx.createRadialGradient(well.x, well.y, 2, well.x, well.y, outer);
+        gradient.addColorStop(0, power > 0.9 ? 'rgba(242, 180, 95, 0.46)' : 'rgba(115, 216, 201, 0.38)');
+        gradient.addColorStop(0.52, power > 0.9 ? 'rgba(242, 180, 95, 0.16)' : 'rgba(115, 216, 201, 0.12)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(well.x, well.y, outer, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(well.x, well.y);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = state.selectedWell === well ? 3 : 2;
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath();
+        ctx.arc(0, 0, well.radius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.globalAlpha = 0.55;
+        ctx.setLineDash([5, 8]);
+        ctx.beginPath();
+        ctx.arc(0, 0, outer * 0.72, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = power > 0.95 ? '#050609' : color;
+        ctx.beginPath();
+        ctx.arc(0, 0, 5.5 + power * 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = palette.text;
+        ctx.font = '12px Inter, system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(formatStrength(well.strength), 0, well.radius + 13);
+        ctx.restore();
+      }
+    }
+
+    function drawBodies() {
+      const s = settings();
+      for (const body of state.bodies) {
+        if (body.trail.length > 2) {
+          ctx.save();
+          ctx.lineWidth = 2;
+          for (let i = 1; i < body.trail.length; i++) {
+            const a = body.trail[i - 1];
+            const b = body.trail[i];
+            ctx.globalAlpha = i / body.trail.length * 0.42;
+            ctx.strokeStyle = body.color;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        const speed = length(body.vx, body.vy);
+        const glow = clamp(speed / 900, 0.08, 0.8);
+        ctx.save();
+        ctx.shadowColor = body.color;
+        ctx.shadowBlur = 18 * glow;
+        ctx.fillStyle = body.color;
+        ctx.beginPath();
+        ctx.arc(body.x, body.y, body.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(6, 15, 17, 0.45)';
+        ctx.beginPath();
+        ctx.arc(body.x - body.radius * 0.3, body.y - body.radius * 0.35, body.radius * 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = state.selectedBody === body ? '#f4f1e8' : 'rgba(244, 241, 232, 0.34)';
+        ctx.lineWidth = state.selectedBody === body ? 2.5 : 1;
+        ctx.beginPath();
+        ctx.arc(body.x, body.y, body.radius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        if (s.showVectors && speed > 12) {
+          drawArrow(body.x, body.y, body.x + body.vx * 0.12, body.y + body.vy * 0.12, body.color, 0.86);
+        }
+        ctx.restore();
+      }
+    }
+
+    function drawArrow(x1, y1, x2, y2, color, alpha = 1) {
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const distance = length(x2 - x1, y2 - y1);
+      const endX = x1 + Math.cos(angle) * clamp(distance, 0, 140);
+      const endY = y1 + Math.sin(angle) * clamp(distance, 0, 140);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(endX, endY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(endX - Math.cos(angle - 0.55) * 10, endY - Math.sin(angle - 0.55) * 10);
+      ctx.lineTo(endX - Math.cos(angle + 0.55) * 10, endY - Math.sin(angle + 0.55) * 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawPointer() {
+      const p = state.pointer;
+      if (!p || state.mode !== 'launch' || !p.moved) return;
+      const s = settings();
+      const vx = (p.startX - p.x) * 3.8 * s.launchPower;
+      const vy = (p.startY - p.y) * 3.8 * s.launchPower;
+      const launchSpeed = length(vx, vy);
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(244, 241, 232, 0.32)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([6, 8]);
+      ctx.beginPath();
+      ctx.moveTo(p.startX, p.startY);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      drawArrow(p.startX, p.startY, p.startX + vx * 0.14, p.startY + vy * 0.14, '#f2b45f', 1);
+      ctx.fillStyle = palette.surface;
+      ctx.strokeStyle = 'rgba(244, 241, 232, 0.18)';
+      roundRect(ctx, p.startX + 12, p.startY - 42, 112, 30, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = palette.text;
+      ctx.font = '12px Inter, system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${formatInt(launchSpeed)} px/s`, p.startX + 24, p.startY - 27);
+      ctx.restore();
+    }
+
+    function roundRect(context, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      context.beginPath();
+      context.moveTo(x + r, y);
+      context.arcTo(x + width, y, x + width, y + height, r);
+      context.arcTo(x + width, y + height, x, y + height, r);
+      context.arcTo(x, y + height, x, y, r);
+      context.arcTo(x, y, x + width, y, r);
+      context.closePath();
+    }
+
+    function drawSparkles() {
+      for (const sparkle of state.sparkles) {
+        const t = sparkle.age / sparkle.life;
+        ctx.save();
+        ctx.globalAlpha = 1 - t;
+        ctx.strokeStyle = sparkle.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(sparkle.x, sparkle.y, 12 + t * 38, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function draw() {
+      const width = state.camera.width;
+      const height = state.camera.height;
+      ctx.clearRect(0, 0, width, height);
+      drawGrid();
+      drawField();
+      drawWells();
+      drawBodies();
+      drawPointer();
+      drawSparkles();
+    }
+
+    function updateReadouts() {
+      const selected = state.selectedBody || state.bodies[state.bodies.length - 1];
+      const speed = selected ? length(selected.vx, selected.vy) : 0;
+      const energy = state.bodies.reduce((sum, body) => {
+        const v = length(body.vx, body.vy);
+        return sum + 0.5 * body.mass * v * v / 1000;
+      }, 0);
+
+      elements.speedReadout.textContent = `${formatInt(speed)} px/s`;
+      elements.countReadout.textContent = String(state.bodies.length);
+      elements.wellReadout.textContent = String(state.wells.length);
+      elements.energyReadout.textContent = formatInt(energy);
+
+      if (state.selectedBody) {
+        const b = state.selectedBody;
+        elements.selectedInfo.textContent = `Mass ${formatInt(b.mass)} kg | velocity (${formatInt(b.vx)}, ${formatInt(b.vy)}) | speed ${formatInt(length(b.vx, b.vy))} px/s`;
+      } else if (state.selectedWell) {
+        elements.selectedInfo.textContent = `Well strength ${formatStrength(state.selectedWell.strength)} | position (${formatInt(state.selectedWell.x)}, ${formatInt(state.selectedWell.y)})`;
+      } else {
+        elements.selectedInfo.textContent = 'No particle selected';
+      }
+    }
+
+    function frame(now) {
+      const dt = clamp((now - state.lastTime) / 1000, 0, 0.05);
+      state.lastTime = now;
+      if (state.running) integrate(dt);
+      draw();
+      updateReadouts();
+      requestAnimationFrame(frame);
+    }
+
+    function toggleRun() {
+      state.running = !state.running;
+      elements.toggleRun.textContent = state.running ? 'Pause' : 'Play';
+      elements.runStatus.textContent = state.running ? 'Running' : 'Paused';
+      document.querySelector('.status-dot').style.background = state.running ? 'var(--green)' : 'var(--amber)';
+    }
+
+    function maxWells() {
+      for (const well of state.wells) {
+        well.strength = 1000;
+      }
+      elements.wellStrength.value = '1000';
+      updateControlLabels();
+      pulse(state.camera.width * 0.5, state.camera.height * 0.5, '#f2b45f');
+    }
+
+    elements.toggleRun.addEventListener('click', toggleRun);
+    elements.resetScene.addEventListener('click', () => resetScene());
+    elements.clearBodies.addEventListener('click', () => {
+      state.bodies = [];
+      state.selectedBody = null;
+      updateReadouts();
+    });
+    elements.addAtCenter.addEventListener('click', () => {
+      const x = state.camera.width * 0.5 + (Math.random() - 0.5) * 60;
+      const y = state.camera.height * 0.5 + (Math.random() - 0.5) * 60;
+      makeWell(x, y);
+      pulse(x, y, settings().wellStrength > 0 ? '#73d8c9' : '#aaa69b');
+    });
+    elements.maxWells.addEventListener('click', maxWells);
+
+    for (const button of elements.modeButtons) {
+      button.addEventListener('click', () => setMode(button.dataset.mode));
+    }
+
+    for (const button of elements.presetButtons) {
+      button.addEventListener('click', () => resetScene(button.dataset.preset));
+    }
+
+    for (const control of [elements.gravity, elements.friction, elements.mass, elements.launchPower, elements.bounce, elements.wellStrength]) {
+      control.addEventListener('input', () => {
+        if (control === elements.wellStrength && state.selectedWell) {
+          state.selectedWell.strength = normalizedWellStrength(elements.wellStrength.value);
+        }
+        updateControlLabels();
+      });
+    }
+
+    canvas.addEventListener('pointerdown', onPointerDown);
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('pointercancel', onPointerUp);
+
+    window.addEventListener('keydown', event => {
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLButtonElement) return;
+      if (event.code === 'Space') {
+        event.preventDefault();
+        toggleRun();
+      } else if (event.key === '1') {
+        setMode('launch');
+      } else if (event.key === '2') {
+        setMode('well');
+      } else if (event.key === '3') {
+        setMode('grab');
+      } else if (event.key === 'Delete' || event.key === 'Backspace') {
+        if (state.selectedWell) {
+          state.wells = state.wells.filter(well => well !== state.selectedWell);
+          state.selectedWell = null;
+        } else if (state.selectedBody) {
+          state.bodies = state.bodies.filter(body => body !== state.selectedBody);
+          state.selectedBody = null;
+        }
+      }
+    });
+
+    window.addEventListener('resize', queueResize);
+    new ResizeObserver(queueResize).observe(elements.stage);
+
+    updateControlLabels();
+    resize();
+    resetScene();
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>
